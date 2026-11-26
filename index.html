@@ -147,33 +147,34 @@
 <script>
 /* ================= 离线演示词库 ================= */
 const PHRASES = [
-  {zh:"你好", sc:"你好呀", en:"Hello", ja:"こんにちは", ru:"Здравствуйте", scene:"问候"},
-  {zh:"谢谢", sc:"多谢了", en:"Thank you", ja:"ありがとうございます", ru:"Спасибо", scene:"感谢"},
-  {zh:"医院怎么走", sc:"医院咋个走", en:"How do I get to the hospital?", ja:"病院へはどう行きますか？", ru:"Как пройти в больницу?", scene:"问路·就医"},
-  {zh:"多少钱", sc:"好多钱", en:"How much is it?", ja:"いくらですか？", ru:"Сколько это стоит?", scene:"购物"},
-  {zh:"早上好", sc:"早上好哦", en:"Good morning", ja:"おはようございます", ru:"Доброе утро", scene:"问候"},
-  {zh:"对不起", sc:"对不住", en:"Sorry", ja:"ごめんなさい", ru:"Извините", scene:"道歉"},
-  {zh:"再见", sc:"下回摆", en:"Goodbye", ja:"さようなら", ru:"До свидания", scene:"告别"},
-  {zh:"我不舒服", sc:"我身上不安逸", en:"I don't feel well", ja:"気分が悪いです", ru:"Мне нездоровится", scene:"就医"},
-  {zh:"请问洗手间在哪", sc:"请问厕所在哪点儿", en:"Where is the restroom?", ja:"トイレはどこですか？", ru:"Где туалет?", scene:"问路"},
-  {zh:"帮我叫一下医生", sc:"帮我喊下医生", en:"Please call a doctor", ja:"医者を呼んでください", ru:"Пожалуйста, позовите врача", scene:"就医"},
-  {zh:"我想去医院看医生", sc:"我想去医院看下医生", en:"I want to go to the hospital to see a doctor", ja:"病院へ行って医者を診てもらいたいです", ru:"Я хочу пойти в больницу к врачу", scene:"就医"},
-  {zh:"请问附近有药店吗", sc:"请问附近有药店没得", en:"Is there a pharmacy nearby?", ja:"近くに薬局はありますか？", ru:"Рядом есть аптека?", scene:"就医·问路"},
-  {zh:"我有点头疼", sc:"我脑壳有点痛", en:"I have a slight headache", ja:"少し頭が痛いです", ru:"У меня немного болит голова", scene:"就医"},
-  {zh:"这个多少钱", sc:"这个好多钱", en:"How much does this cost?", ja:"これはいくらですか？", ru:"Сколько это стоит?", scene:"购物"},
-  {zh:"我迷路了", sc:"我遭迷路了", en:"I'm lost", ja:"道に迷いました", ru:"Я заблудился", scene:"问路"},
-  {zh:"请慢一点说", sc:"请说慢滴点儿", en:"Please speak slower", ja:"もっとゆっくり話してください", ru:"Пожалуйста, говорите медленнее", scene:"沟通"},
-  {zh:"我需要帮助", sc:"我需要搭个手", en:"I need help", ja:"助けが必要です", ru:"Мне нужна помощь", scene:"沟通"},
-  {zh:"请问地铁站在哪", sc:"请问地铁站在哪点儿", en:"Where is the subway station?", ja:"地下鉄の駅はどこですか？", ru:"Где станция метро?", scene:"问路"},
-  {zh:"今天天气很好", sc:"今天天气巴适得很", en:"The weather is nice today", ja:"今日はいい天気ですね", ru:"Сегодня хорошая погода", scene:"日常"},
-  {zh:"我是学生", sc:"我是学生娃", en:"I am a student", ja:"私は学生です", ru:"Я студент", scene:"介绍"},
-  {zh:"谢谢你的帮助", sc:"多谢你帮忙", en:"Thank you for your help", ja:"助けてくれてありがとうございます", ru:"Спасибо за помощь", scene:"感谢"},
-  {zh:"请帮我翻译这句话", sc:"帮我翻下这句话", en:"Please help me translate this sentence", ja:"この文を訳してください", ru:"Пожалуйста, переведите это предложение", scene:"沟通"}
+  {zh:"你好", sc:"你好呀", en:"Hello", ja:"こんにちは", ru:"Здравствуйте", yue:"你好", scene:"问候"},
+  {zh:"谢谢", sc:"多谢了", en:"Thank you", ja:"ありがとうございます", ru:"Спасибо", yue:"多謝", scene:"感谢"},
+  {zh:"医院怎么走", sc:"医院咋个走", en:"How do I get to the hospital?", ja:"病院へはどう行きますか？", ru:"Как пройти в больницу?", yue:"醫院點行呀？", scene:"问路·就医"},
+  {zh:"多少钱", sc:"好多钱", en:"How much is it?", ja:"いくらですか？", ru:"Сколько это стоит?", yue:"幾錢呀？", scene:"购物"},
+  {zh:"早上好", sc:"早上好哦", en:"Good morning", ja:"おはようございます", ru:"Доброе утро", yue:"早晨", scene:"问候"},
+  {zh:"对不起", sc:"对不住", en:"Sorry", ja:"ごめんなさい", ru:"Извините", yue:"對唔住", scene:"道歉"},
+  {zh:"再见", sc:"下回摆", en:"Goodbye", ja:"さようなら", ru:"До свидания", yue:"再見", scene:"告别"},
+  {zh:"我不舒服", sc:"我身上不安逸", en:"I don't feel well", ja:"気分が悪いです", ru:"Мне нездоровится", yue:"我唔舒服", scene:"就医"},
+  {zh:"请问洗手间在哪", sc:"请问厕所在哪点儿", en:"Where is the restroom?", ja:"トイレはどこですか？", ru:"Где туалет?", yue:"請問洗手間喺邊度？", scene:"问路"},
+  {zh:"帮我叫一下医生", sc:"帮我喊下医生", en:"Please call a doctor", ja:"医者を呼んでください", ru:"Пожалуйста, позовите врача", yue:"幫我叫下醫生", scene:"就医"},
+  {zh:"我想去医院看医生", sc:"我想去医院看下医生", en:"I want to go to the hospital to see a doctor", ja:"病院へ行って医者を診てもらいたいです", ru:"Я хочу пойти в больницу к врачу", yue:"我想去醫院睇醫生", scene:"就医"},
+  {zh:"请问附近有药店吗", sc:"请问附近有药店没得", en:"Is there a pharmacy nearby?", ja:"近くに薬局はありますか？", ru:"Рядом есть аптека?", yue:"請問附近有冇藥房？", scene:"就医·问路"},
+  {zh:"我有点头疼", sc:"我脑壳有点痛", en:"I have a slight headache", ja:"少し頭が痛いです", ru:"У меня немного болит голова", yue:"我個頭少少痛", scene:"就医"},
+  {zh:"这个多少钱", sc:"这个好多钱", en:"How much does this cost?", ja:"これはいくらですか？", ru:"Сколько это стоит?", yue:"呢個幾錢呀？", scene:"购物"},
+  {zh:"我迷路了", sc:"我遭迷路了", en:"I'm lost", ja:"道に迷いました", ru:"Я заблудился", yue:"我蕩失路喇", scene:"问路"},
+  {zh:"请慢一点说", sc:"请说慢滴点儿", en:"Please speak slower", ja:"もっとゆっくり話してください", ru:"Пожалуйста, говорите медленнее", yue:"請講慢少少", scene:"沟通"},
+  {zh:"我需要帮助", sc:"我需要搭个手", en:"I need help", ja:"助けが必要です", ru:"Мне нужна помощь", yue:"我需要幫手", scene:"沟通"},
+  {zh:"请问地铁站在哪", sc:"请问地铁站在哪点儿", en:"Where is the subway station?", ja:"地下鉄の駅はどこですか？", ru:"Где станция метро?", yue:"請問地鐵站喺邊度？", scene:"问路"},
+  {zh:"今天天气很好", sc:"今天天气巴适得很", en:"The weather is nice today", ja:"今日はいい天気ですね", ru:"Сегодня хорошая погода", yue:"今日天氣好好", scene:"日常"},
+  {zh:"我是学生", sc:"我是学生娃", en:"I am a student", ja:"私は学生です", ru:"Я студент", yue:"我係學生", scene:"介绍"},
+  {zh:"谢谢你的帮助", sc:"多谢你帮忙", en:"Thank you for your help", ja:"助けてくれてありがとうございます", ru:"Спасибо за помощь", yue:"多謝你幫手", scene:"感谢"},
+  {zh:"请帮我翻译这句话", sc:"帮我翻下这句话", en:"Please help me translate this sentence", ja:"この文を訳してください", ru:"Пожалуйста, переведите это предложение", yue:"請幫我翻譯呢句", scene:"沟通"}
 ];
 
 const LANGS = [
   {code:"zh", label:"普通话", tts:"zh-CN"},
   {code:"sc", label:"四川话（方言演示）", tts:"zh-CN"},
+  {code:"yue", label:"粤语（Cantonese）", tts:"zh-HK"},
   {code:"en", label:"英语", tts:"en-US"},
   {code:"ja", label:"日语", tts:"ja-JP"},
   {code:"ru", label:"俄语", tts:"ru-RU"}
@@ -288,10 +289,10 @@ const SIGNS = [
 const SIGN_META = [
   {en:"Hello", ja:"こんにちは", ru:"Здравствуйте", clip:"Wave", match:["你好","Hello","hello","こんにちは","Здравствуйте"]},
   {en:"Thank you", ja:"ありがとう", ru:"Спасибо", clip:"ThumbsUp", match:["谢谢","谢谢你的帮助","Thank you","thank you","Спасибо"]},
-  {en:"Hospital", ja:"病院", ru:"Больница", clip:"Idle", match:["医院","医院怎么走","我想去医院看医生","hospital","Hospital"]},
-  {en:"How much?", ja:"いくら？", ru:"Сколько?", clip:"Idle", match:["多少钱","这个多少钱","How much","how much"]},
-  {en:"Good morning", ja:"おはよう", ru:"Доброе утро", clip:"Idle", match:["早上好","Good morning","good morning"]},
-  {en:"Sorry", ja:"ごめんなさい", ru:"Извините", clip:"Idle", match:["对不起","Sorry","sorry"]},
+  {en:"Hospital", ja:"病院", ru:"Больница", clip:"Punch", match:["医院","医院怎么走","我想去医院看医生","hospital","Hospital"]},
+  {en:"How much?", ja:"いくら？", ru:"Сколько?", clip:"Dance", match:["多少钱","这个多少钱","How much","how much"]},
+  {en:"Good morning", ja:"おはよう", ru:"Доброе утро", clip:"Jump", match:["早上好","Good morning","good morning"]},
+  {en:"Sorry", ja:"ごめんなさい", ru:"Извините", clip:"No", match:["对不起","Sorry","sorry"]},
   {en:"Goodbye", ja:"さようなら", ru:"До свидания", clip:"Wave", match:["再见","Goodbye","goodbye","さようなら","До свидания"]}
 ];
 SIGNS.forEach((s,i)=>Object.assign(s, SIGN_META[i]));
@@ -310,6 +311,46 @@ const app = $("#app");
 function langLabel(code){ const l=LANGS.find(x=>x.code===code); return l?l.label:code; }
 function ttsCode(code){ const l=LANGS.find(x=>x.code===code); return l?l.tts:"zh-CN"; }
 function mtCode(code){ return code==="sc"?"zh":code; }
+
+/* —— 粤语离线词表（双向，人工校对，答辩演示用） —— */
+const YUE_ZH = {
+ "唔該":"谢谢","唔該晒":"非常感谢","多謝":"谢谢","醫院點行":"医院怎么走","點行":"怎么走",
+ "幾錢":"多少钱","幾多錢":"多少钱","早晨":"早上好","對唔住":"对不起","再見":"再见","拜拜":"再见",
+ "唔使客氣":"不客气","洗手間喺邊度":"洗手间在哪","喺邊度":"在哪里","喺邊":"在哪里","我唔知":"我不知道",
+ "我唔舒服":"我不舒服","食飯":"吃饭","飲茶":"喝茶","埋單":"结账","幾點":"几点","返工":"上班",
+ "放工":"下班","屋企":"家","巴士":"公交车","的士":"出租车","地鐵":"地铁","藥房":"药店",
+ "醫院":"医院","學生":"学生","老師":"老师","朋友":"朋友","好攰":"很累","好食":"好吃",
+ "而家":"现在","聽日":"明天","尋日":"昨天","點解":"为什么","邊個":"谁","蕩失路":"迷路",
+ "幫手":"帮忙","睇醫生":"看医生","地鐵站":"地铁站","廁所":"洗手间","呢個":"这个","嗰個":"那个"
+};
+const ZH_YUE = {};
+Object.keys(YUE_ZH).forEach(k=>{ const v=YUE_ZH[k]; if(!ZH_YUE[v]) ZH_YUE[v]=k; });
+
+/* 粤语 ↔ 普通话：先整句词卡，再逐词替换 */
+function yueTranslate(text, from, to){
+  const t=String(text||"").trim();
+  if(!t) return null;
+  const bare = t.replace(/[？?！!。，,、\s]/g,"");
+  if(from==="yue" && to==="zh"){
+    const card = PHRASES.find(p=>p.yue===t || p.yue===bare || (p.yue&&p.yue.replace(/[？?！!。，,]/g,"")===bare));
+    if(card) return card.zh;
+    if(YUE_ZH[bare]) return YUE_ZH[bare];
+    let s=t, hit=false;
+    Object.keys(YUE_ZH).forEach(k=>{ if(s.indexOf(k)>=0){ s=s.split(k).join(YUE_ZH[k]); hit=true; } });
+    return hit ? s.replace(/\s+/g," ").trim() : null;
+  }
+  if(from==="zh" && to==="yue"){
+    const card = PHRASES.find(p=>p.zh===t || p.zh===bare);
+    if(card) return card.yue;
+    if(ZH_YUE[bare]) return ZH_YUE[bare];
+    let s=t, hit=false;
+    Object.keys(ZH_YUE).forEach(k=>{ if(s.indexOf(k)>=0){ s=s.split(k).join(ZH_YUE[k]); hit=true; } });
+    return hit ? s : null;
+  }
+  if(from==="zh" && to==="en"){ return null; }
+  return null;
+}
+function isYue(code){ return code==="yue"; }
 
 /* ================= 路由 ================= */
 function route(){
@@ -333,7 +374,7 @@ function renderHome(){
     </div>
     <div class="grid grid-3">
       <div class="mod"><div class="tag">核心模块 1</div><h3>方言 · 多语言互译</h3>
-        <p class="muted">普通话 ↔ 四川话，可切换英语 / 日语 / 俄语；支持自由输入长句，联网在线翻译 + 离线词库兜底，支持双向交换与语音朗读。</p></div>
+        <p class="muted">普通话 ↔ 四川话 / 粤语，可切换英语 / 日语 / 俄语；支持自由输入长句，联网在线翻译 + 离线词库兜底（粤语↔普通话有 22 个常用句的人工校对词库），支持双向交换与语音朗读。</p></div>
       <div class="mod"><div class="tag">核心模块 2</div><h3>手语窄场景演示</h3>
         <p class="muted">7 个固定常用手语词，每个词配内置动作示意图；摄像头取景 / 上传图片 / 词卡点选 / 键盘 1–7 兜底，反向点词查看动作分解。</p></div>
       <div class="mod"><div class="tag">答辩材料</div><h3>演示脚本与边界话术</h3>
@@ -398,7 +439,8 @@ function drawBank(){
   bank.innerHTML = PHRASES.map((p,i)=>`
     <div class="bank-item ${state.bankIndex===i?"active":""}" data-i="${i}">
       <div class="zh">${p.zh} <span class="muted">· ${p.scene}</span></div>
-      <div class="sc">方言：${p.sc}</div>
+      <div class="sc">四川话：${p.sc}</div>
+      <div class="sc">粤语：${p.yue||""}</div>
     </div>`).join("");
   bank.querySelectorAll(".bank-item").forEach(el=>{
     el.onclick = ()=>{
@@ -414,7 +456,8 @@ function drawBank(){
 function matchPhrase(text){
   if(!text) return null;
   const t = text.trim();
-  return PHRASES.find(p=> p.zh===t || p.sc===t || p.en===t || p.ja===t || p.ru===t) || null;
+  const bare = t.replace(/[？?！!。，,、\s]/g,"");
+  return PHRASES.find(p=> p.zh===t || p.sc===t || p.en===t || p.ja===t || p.ru===t || p.yue===t || p.yue===bare) || null;
 }
 
 async function mtOnline(text, from, to){
@@ -489,9 +532,38 @@ async function doTranslate(text){
   const p = matchPhrase(text);
   if(p){ renderBankResult(p, text); return; }
 
+  // 粤语 ↔ 普通话：先用人工校对的离线词库，命中就直接给结果（这一路是“准确”的）
+  if(isYue(state.src) || isYue(state.tgt)){
+    const yueRes = yueTranslate(text, state.src, state.tgt);
+    if(yueRes){
+      state.lastResult = {text:yueRes, code:state.tgt};
+      addConvo({srcLabel:langLabel(state.src), srcText:text, tgtLabel:langLabel(state.tgt), tgtText:yueRes, badge:"粤语词库", badgeClass:"fallback"});
+      area.innerHTML = `
+        <div class="result">
+          <div class="lang-label">${langLabel(state.src)} 原文</div>
+          <div class="big">${text}</div>
+          <div class="lang-label" style="margin-top:10px">${langLabel(state.tgt)} 译文 <span class="badge fallback">粤语离线词库（人工校对）</span></div>
+          <div class="big" style="color:var(--teal)">${yueRes}</div>
+          <div class="row"><button class="mini" id="curCard">🖼 大字卡片</button></div>
+          ${signBridgeBtn(text+" "+yueRes)}
+          <p class="note">该结果来自内置的粤语对照词库（覆盖 22 个常用句 + 数十个高频词），可放心当作“准确翻译”演示；词库外的句子会转在线接口，仅作参考。</p>
+        </div>`;
+      $("#curCard").onclick=()=>openBigCard(state.convo.length-1);
+      wireToSign(text+" "+yueRes);
+      focusResult();
+      return;
+    }
+  }
+
   status.innerHTML = `<span class="loading">正在调用在线翻译…</span>`;
   area.innerHTML = `<div class="result"><div class="loading">正在翻译，请稍候…</div></div>`;
-  const res = await mtOnline(text, state.src, state.tgt);
+  // 粤语 → 其他语言：先用人工词库把粤语转成普通话，再把普通话在线转成目标语言（两段式，质量更稳）
+  let work=text, from=state.src, to=state.tgt, chain="";
+  if(isYue(state.src) && state.tgt!=="zh" && state.tgt!=="yue"){
+    const mid=yueTranslate(text,"yue","zh");
+    if(mid){ work=mid; from="zh"; chain=`粤语→普通话（离线词库）→${langLabel(state.tgt)}（在线）`; }
+  }
+  const res = await mtOnline(work, from, to);
   status.innerHTML = "";
   if(res){
     state.lastResult = {text:res.text, code:state.tgt};
@@ -504,7 +576,13 @@ async function doTranslate(text){
         <div class="big" style="color:var(--teal)">${res.text}</div>
         <div class="row"><button class="mini" id="curCard">🖼 大字卡片</button></div>
         ${signBridgeBtn(text+" "+res.text)}
-        <p class="note">长句由在线翻译接口生成；方言（四川话）仅做文字演示，方言语音合成不在本版范围。</p>
+        <p class="note">${chain
+          ? "本结果分两步生成：" + chain + "（第一步用的人工校对粤语词库，第二步为在线机器翻译）。"
+          : ((isYue(state.src)||isYue(state.tgt))
+            ? (isYue(state.src)
+              ? "粤语作为源语言时走的是参考级机器翻译（输出以简体普通话或英文呈现）；想演示“准确”，请用上面词库里人工校对过的 22 个常用句。"
+              : "粤语作为目标语言时输出为繁体粤语字，在线结果为参考级；上面词库里的 22 个常用句是人工校对版。")
+            : "长句由在线翻译接口生成；方言（四川话 / 粤语）仅在词库范围内做文字演示，方言语音合成不在本版范围。")}</p>
       </div>`;
     $("#curCard").onclick=()=>openBigCard(state.convo.length-1);
     wireToSign(text+" "+res.text);
@@ -557,7 +635,8 @@ function renderBankResult(p, text){
       ${signBridgeBtn(srcText+" "+tgtText)}
       <div class="pairs">
         <div class="pair"><div class="k">英语</div><div class="v">${p.en}</div></div>
-        <div class="pair"><div class="k">日语</div><div class="v">${p.ja}</div></div>
+        <div class="pair"><div class="k">粤语</div><div class="v">${p.yue||""}</div></div>
+      <div class="pair"><div class="k">日语</div><div class="v">${p.ja}</div></div>
         <div class="pair"><div class="k">俄语</div><div class="v">${p.ru}</div></div>
         <div class="pair"><div class="k">场景</div><div class="v">${p.scene}</div></div>
       </div>
@@ -597,7 +676,11 @@ function toggleAutoDemo(){ demo.playing ? pauseAutoDemo() : resumeAutoDemo(); }
 function syncDemoBtn(){ const b=$("#demoToggle"); if(!b) return; b.textContent=demo.playing?"⏸ 暂停":"▶ 自动演示"; }
 
 /* ================= 3D 演示舞台（离线 three.js + 内置模型） ================= */
-const stage = { renderer:null, scene:null, camera:null, mixer:null, controls:null, clips:{}, clock:null, raf:0, ready:false };
+const stage = { renderer:null, scene:null, camera:null, mixer:null, controls:null, clips:{}, clock:null, raf:0, ready:false, bones:null, signIdx:0, signT0:0 };
+const SIGN_BONES=["UpperArmR","LowerArmR","HandR"];
+// 每个词选用模型自带的、真的有肢体动作的动画片段
+const SIGN_CLIP=["Wave","ThumbsUp","Punch","Dance","Jump","No","Wave"];
+const SIGN_SPEED=[1,1,1,1.1,1,1,1];
 function stageFallback(host, msg){ if(host) host.innerHTML=`<div class="stage-fallback">${msg}</div>`; }
 function initStage3d(){
   const host=$("#stage3d"); if(!host) return;
@@ -607,7 +690,7 @@ function initStage3d(){
     stage.scene=new THREE.Scene();
     stage.scene.background=new THREE.Color(0xeef4f3);
     stage.camera=new THREE.PerspectiveCamera(42,w/h,.1,100);
-    stage.camera.position.set(0,1.3,3.6);
+    stage.camera.position.set(0,1.35,4.15);
     stage.renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
     stage.renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
     stage.renderer.setSize(w,h);
@@ -622,7 +705,7 @@ function initStage3d(){
     stage.controls=new THREE.OrbitControls(stage.camera, stage.renderer.domElement);
     stage.controls.target.set(0,1.0,0); stage.controls.enablePan=false;
     stage.controls.minDistance=2.2; stage.controls.maxDistance=6;
-    stage.controls.autoRotate=true; stage.controls.autoRotateSpeed=1.2;
+    stage.controls.autoRotate=false; stage.controls.autoRotateSpeed=1.2;
     stage.clock=new THREE.Clock();
     const b64=window.ROBOT_GLB_B64||"";
     const bin=Uint8Array.from(atob(b64), c=>c.charCodeAt(0));
@@ -638,6 +721,8 @@ function initStage3d(){
       const c=box.getCenter(new THREE.Vector3());
       model.position.x-=c.x; model.position.z-=c.z; model.position.y-=box.min.y;
       stage.scene.add(model);
+      stage.model=model;
+      stage.baseY=model.position.y;
       stage.clips={}; g.animations.forEach(c=>stage.clips[c.name]=c);
       stage.mixer=new THREE.AnimationMixer(model);
       stage.ready=true;
@@ -651,14 +736,52 @@ function initStage3d(){
 function playSignClip(i){
   if(!stage.mixer || !stage.ready) return;
   const s=SIGNS[i]; if(!s) return;
+  stage.signIdx=i;
+  stage.signT0=performance.now()/1000;
   stage.mixer.stopAllAction();
-  const clip=stage.clips[s.clip]||stage.clips.Idle;
-  if(clip) stage.mixer.clipAction(clip).reset().play();
+  // 每个词都用模型自带动画里“真的会动”的那几支（Wave/ThumbsUp/Walking/Dance/Jump/No），
+  // 再叠加一次整体姿态（点头/鞠躬/侧倾），让 7 个词的动作彼此区分
+  const name=SIGN_CLIP[i]||"Idle";
+  const clip=stage.clips[name]||stage.clips.Idle;
+  if(clip){
+    const act=stage.mixer.clipAction(clip);
+    act.reset(); act.setLoop(THREE.LoopRepeat, Infinity); act.timeScale=SIGN_SPEED[i]||1; act.play();
+  }
+}
+
+/* 每个手语词的整体姿态编排（叠加在自带动画之上，保证动作明显、彼此可辨） */
+function signPose(i,t){
+  const TAU=Math.PI*2;
+  switch(i){
+    case 0: // 你好：挥手 + 轻微侧倾点头
+      return {rx:0, ry:0, rz:0.05*Math.sin(TAU*1.0*t), dy:0.02*Math.sin(TAU*1.0*t)};
+    case 1: // 谢谢：竖拇指 + 前倾致意
+      return {rx:0.18*Math.max(0,Math.sin(TAU*0.9*t)), ry:0, rz:0, dy:0};
+    case 2: // 医院：迈步（Walking）+ 左右转头看向方向
+      return {rx:0.03, ry:0.32*Math.sin(TAU*0.55*t), rz:0.04*Math.sin(TAU*0.55*t), dy:0};
+    case 3: // 多少钱：双手摆动（Dance）+ 身体左右晃
+      return {rx:0, ry:0, rz:0.09*Math.sin(TAU*2.4*t), dy:0.015*Math.sin(TAU*2.4*t)};
+    case 4: // 早上好：跳起（Jump）+ 身体上弹
+      return {rx:0, ry:0, rz:0, dy:0.03*Math.abs(Math.sin(TAU*1.1*t))};
+    case 5: // 对不起：摆手（No）+ 低头鞠躬
+      return {rx:0.26*Math.max(0,Math.sin(TAU*0.8*t)), ry:0, rz:0, dy:0};
+    case 6: // 再见：挥手 + 大幅左右摆
+      return {rx:0, ry:0, rz:0.12*Math.sin(TAU*1.4*t), dy:0.02*Math.sin(TAU*1.4*t)};
+    default: return {rx:0,ry:0,rz:0,dy:0};
+  }
+}
+function applySignPose(){
+  if(!stage.ready||!stage.model) return;
+  const t=performance.now()/1000-(stage.signT0||0);
+  const p=signPose(stage.signIdx||0,t);
+  stage.model.rotation.set(p.rx,p.ry,p.rz);
+  stage.model.position.y=(stage.baseY||0)+p.dy;
 }
 function loop3d(){
   stage.raf=requestAnimationFrame(loop3d);
   const dt=stage.clock?stage.clock.getDelta():0;
   if(stage.mixer) stage.mixer.update(dt);
+  applySignPose();
   if(stage.controls) stage.controls.update();
   if(stage.renderer&&stage.scene&&stage.camera) stage.renderer.render(stage.scene,stage.camera);
 }
@@ -686,7 +809,7 @@ function renderSign(){
       </div>
       <div class="stage3d" id="stage3d">
         <span class="stage-tag">3D 演示模型（拖拽可旋转查看）</span>
-        <span class="stage-note">手势分解以右侧示意图为准</span>
+        <span class="stage-note">3D 模型为动作示意，细节手型以右侧示意图为准</span>
       </div>
       <div class="sign-layout">
         <div class="cam-box">
@@ -812,6 +935,7 @@ function renderDefense(){
       <h2>3 分钟演示脚本（建议顺序）</h2>
       <div class="step"><div class="n">1</div><div><strong>开场（20 秒）：</strong>介绍项目名 LinguaBridge，目标是帮方言使用者、外语沟通者和听障人群做跨语言沟通；说明今天演示的是 MVP 原型。</div></div>
       <div class="step"><div class="n">2</div><div><strong>方言·多语言互译（60 秒）：</strong>打开互译页，选源语言四川话、目标语言英语；先点词卡展示离线短句，再在输入框打一句长句（如“我想去医院看医生”）展示在线翻译；切换日语 / 俄语，点「⇄」交换方向演示反向链路。</div></div>
+      <div class="step"><div class="n">2.5</div><div><strong>粤语链路（30 秒）：</strong>源语言切“粤语”，输入“醫院點行呀？”→ 词库直出“医院怎么走”；再点「⇄」演示普通话→粤语（“多少钱”→“幾錢呀？”）；最后演示粤语→英语的两段式（粤语先经词库转普通话，再在线转英文）。讲清口径：词库内 22 个常用句是人工校对的准确结果，词库外为参考级在线翻译。</div></div>
       <div class="step"><div class="n">3</div><div><strong>手语演示（60 秒）：</strong>打开手语页，点「▶ 自动演示」逐个播放 7 个词的动作动画；对照示意图用手比动作，念出每个词的演示话术。摄像头为备选取景，打不开直接点词卡或按 1–7，不影响演示。</div></div>
       <div class="step"><div class="n">4</div><div><strong>收尾与边界（40 秒）：</strong>回到本页，讲清评测设计、当前边界和后续规划；强调先跑通一个真实沟通场景的闭环，再扩展词汇与语种。</div></div>
     </div>
