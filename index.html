@@ -123,6 +123,7 @@
   .stage3d{position:relative;height:340px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,#eef4f3,#f7faf9);overflow:hidden;margin-bottom:16px}
   .stage3d canvas{display:block;position:absolute;left:0;top:0;width:auto;height:auto;max-height:none;max-width:none;background:transparent;border-radius:0;object-fit:fill}
   .stage-tag{position:absolute;left:14px;top:12px;font-size:12px;color:var(--sub);background:rgba(255,255,255,.82);padding:4px 10px;border-radius:8px;z-index:2}
+.stage-act{position:absolute;left:14px;bottom:12px;font-size:12px;color:var(--teal);background:rgba(255,255,255,.9);border:1px solid rgba(13,110,102,.25);padding:4px 10px;border-radius:8px;z-index:2}
   .stage-fallback{padding:34px 20px;text-align:center;color:var(--sub);font-size:13px;line-height:1.8}
   .stage-note{position:absolute;right:14px;bottom:10px;font-size:11px;color:var(--sub);background:rgba(255,255,255,.82);padding:3px 9px;border-radius:8px;z-index:2}
 </style>
@@ -287,13 +288,13 @@ const SIGNS = [
 
 /* 手语词的多语言标签 + 对应三维动作片段 + 互译桥接匹配词 */
 const SIGN_META = [
-  {en:"Hello", ja:"こんにちは", ru:"Здравствуйте", clip:"Wave", match:["你好","Hello","hello","こんにちは","Здравствуйте"]},
-  {en:"Thank you", ja:"ありがとう", ru:"Спасибо", clip:"ThumbsUp", match:["谢谢","谢谢你的帮助","Thank you","thank you","Спасибо"]},
-  {en:"Hospital", ja:"病院", ru:"Больница", clip:"Punch", match:["医院","医院怎么走","我想去医院看医生","hospital","Hospital"]},
-  {en:"How much?", ja:"いくら？", ru:"Сколько?", clip:"Dance", match:["多少钱","这个多少钱","How much","how much"]},
-  {en:"Good morning", ja:"おはよう", ru:"Доброе утро", clip:"Jump", match:["早上好","Good morning","good morning"]},
-  {en:"Sorry", ja:"ごめんなさい", ru:"Извините", clip:"No", match:["对不起","Sorry","sorry"]},
-  {en:"Goodbye", ja:"さようなら", ru:"До свидания", clip:"Wave", match:["再见","Goodbye","goodbye","さようなら","До свидания"]}
+  {en:"Hello", ja:"こんにちは", ru:"Здравствуйте", clip:"Wave", modelAct:"挥手", match:["你好","Hello","hello","こんにちは","Здравствуйте"]},
+  {en:"Thank you", ja:"ありがとう", ru:"Спасибо", clip:"ThumbsUp", modelAct:"竖拇指", match:["谢谢","谢谢你的帮助","Thank you","thank you","Спасибо"]},
+  {en:"Hospital", ja:"病院", ru:"Больница", clip:"Punch", modelAct:"双臂向前伸出（指方向）", match:["医院","医院怎么走","我想去医院看医生","hospital","Hospital"]},
+  {en:"How much?", ja:"いくら？", ru:"Сколько?", clip:"Dance", modelAct:"双手在体侧摆动", match:["多少钱","这个多少钱","How much","how much"]},
+  {en:"Good morning", ja:"おはよう", ru:"Доброе утро", clip:"Jump", modelAct:"双手高举跳起", match:["早上好","Good morning","good morning"]},
+  {en:"Sorry", ja:"ごめんなさい", ru:"Извините", clip:"No", modelAct:"摆手 + 低头鞠躬", match:["对不起","Sorry","sorry"]},
+  {en:"Goodbye", ja:"さようなら", ru:"До свидания", clip:"Wave", modelAct:"高举挥手，幅度更大", match:["再见","Goodbye","goodbye","さようなら","До свидания"]}
 ];
 SIGNS.forEach((s,i)=>Object.assign(s, SIGN_META[i]));
 
@@ -809,6 +810,7 @@ function renderSign(){
       </div>
       <div class="stage3d" id="stage3d">
         <span class="stage-tag">3D 演示模型（拖拽可旋转查看）</span>
+        <span class="stage-act" id="stageAct">模型示意动作：挥手</span>
         <span class="stage-note">3D 模型为动作示意，细节手型以右侧示意图为准</span>
       </div>
       <div class="sign-layout">
@@ -840,6 +842,7 @@ function renderSign(){
 
   drawSignGrid();
   initStage3d();
+  const saInit = $("#stageAct"); if(saInit) saInit.textContent = `模型示意动作：${SIGNS[state.signActive||0].modelAct}`;
   $("#demoToggle").onclick = toggleAutoDemo;
   $("#demoStop").onclick = stopAutoDemo;
   $("#camStart").onclick = startCam;
@@ -875,6 +878,7 @@ function pickSign(i){
   drawSignGrid();
   playSignClip(i);
   const st = $("#demoStatus"); if(st) st.textContent = `第 ${i+1} / ${SIGNS.length} 个`;
+  const sa = $("#stageAct"); if(sa) sa.textContent = `模型示意动作：${s.modelAct}`;
   $("#signResult").innerHTML = `
     <div class="result">
       <div class="lang-label">选中 / 演示结果</div>
@@ -883,16 +887,18 @@ function pickSign(i){
         <div><div class="big" style="color:var(--teal)">${s.word}</div>
         <div class="gesture"><b>多语言：</b>EN ${s.en} ｜ JA ${s.ja} ｜ RU ${s.ru}</div>
         <div class="gesture"><b>手位：</b>${s.pos}</div>
+        <div class="gesture"><b>3D 模型示意动作：</b>${s.modelAct}（示意，非标准手型）</div>
         <div class="gesture">${s.desc}</div>
         <div class="gesture" style="margin-top:6px"><b>演示话术：</b>${s.line}</div></div>
       </div>
       <div class="sign-detail">
-        <div class="sd-block"><b>动作分解</b><ol>${s.steps.map((st,i)=>`<li>${st}</li>`).join("")}</ol></div>
+        <div class="sd-block"><b>动作分解（标准手语）</b><ol>${s.steps.map((st,i)=>`<li>${st}</li>`).join("")}</ol></div>
+        <div class="sd-block"><b>3D 模型示意动作</b><p>${s.modelAct}。三维模型用的是内置骨骼动画，负责“动作在发生”的观感，<b>不等于</b>上面的标准手型；标准手型请看「动作分解」与右侧示意图。</p></div>
         <div class="sd-block"><b>使用场景</b><p>${s.scene}</p></div>
         <div class="sd-block"><b>要点提示</b><p>${s.tips}</p></div>
         <div class="sd-block"><b>手位对照</b><p>手放在${s.pos}，对照图中浅色头部 / 身体引导线确认位置。</p></div>
       </div>
-      <div class="note">反向演示：屏幕文字 → 对应手语动作示意；正式版本将由摄像头提取手部关键点后接入轻量分类模型。</div>
+      <div class="note">口径说明：本模块把「手语词的真实动作分解」（文字 + 示意图）与「3D 模型的示意动画」分开呈现——前者是真手语，后者只证明视觉通道能跑通。正式版本将由摄像头提取手部关键点，接入轻量分类模型做 7 词闭集识别。</div>
     </div>`;
 }
 
@@ -936,7 +942,7 @@ function renderDefense(){
       <div class="step"><div class="n">1</div><div><strong>开场（20 秒）：</strong>介绍项目名 LinguaBridge，目标是帮方言使用者、外语沟通者和听障人群做跨语言沟通；说明今天演示的是 MVP 原型。</div></div>
       <div class="step"><div class="n">2</div><div><strong>方言·多语言互译（60 秒）：</strong>打开互译页，选源语言四川话、目标语言英语；先点词卡展示离线短句，再在输入框打一句长句（如“我想去医院看医生”）展示在线翻译；切换日语 / 俄语，点「⇄」交换方向演示反向链路。</div></div>
       <div class="step"><div class="n">2.5</div><div><strong>粤语链路（30 秒）：</strong>源语言切“粤语”，输入“醫院點行呀？”→ 词库直出“医院怎么走”；再点「⇄」演示普通话→粤语（“多少钱”→“幾錢呀？”）；最后演示粤语→英语的两段式（粤语先经词库转普通话，再在线转英文）。讲清口径：词库内 22 个常用句是人工校对的准确结果，词库外为参考级在线翻译。</div></div>
-      <div class="step"><div class="n">3</div><div><strong>手语演示（60 秒）：</strong>打开手语页，点「▶ 自动演示」逐个播放 7 个词的动作动画；对照示意图用手比动作，念出每个词的演示话术。摄像头为备选取景，打不开直接点词卡或按 1–7，不影响演示。</div></div>
+      <div class="step"><div class="n">3</div><div><strong>手语演示（60 秒）：</strong>打开手语页，点「▶ 自动演示」逐个播放 7 个词的动作动画；对照示意图用手比动作，念出每个词的演示话术。摄像头为备选取景，打不开直接点词卡或按 1–7，不影响演示。<br><b>口径（务必先说）：</b>页面把两件事分开——「动作分解」是真手语的标准手型；3D 模型做的是“示意动作”（内置骨骼动画，如挥手、竖拇指、前伸指路），用来证明视觉通道能跑通，<b>不是</b>写实手语动捕。评委问到模型动作与文字不完全一致时，就按这句解释。</div></div>
       <div class="step"><div class="n">4</div><div><strong>收尾与边界（40 秒）：</strong>回到本页，讲清评测设计、当前边界和后续规划；强调先跑通一个真实沟通场景的闭环，再扩展词汇与语种。</div></div>
     </div>
 
