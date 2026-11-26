@@ -121,7 +121,7 @@
   .demo-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0}
   /* 3D 演示舞台 */
   .stage3d{position:relative;height:340px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,#eef4f3,#f7faf9);overflow:hidden;margin-bottom:16px}
-  .stage3d canvas{display:block}
+  .stage3d canvas{display:block;position:absolute;left:0;top:0;width:auto;height:auto;max-height:none;max-width:none;background:transparent;border-radius:0;object-fit:fill}
   .stage-tag{position:absolute;left:14px;top:12px;font-size:12px;color:var(--sub);background:rgba(255,255,255,.82);padding:4px 10px;border-radius:8px;z-index:2}
   .stage-fallback{padding:34px 20px;text-align:center;color:var(--sub);font-size:13px;line-height:1.8}
   .stage-note{position:absolute;right:14px;bottom:10px;font-size:11px;color:var(--sub);background:rgba(255,255,255,.82);padding:3px 9px;border-radius:8px;z-index:2}
@@ -605,11 +605,13 @@ function initStage3d(){
   try{
     const w=host.clientWidth||640, h=host.clientHeight||340;
     stage.scene=new THREE.Scene();
+    stage.scene.background=new THREE.Color(0xeef4f3);
     stage.camera=new THREE.PerspectiveCamera(42,w/h,.1,100);
     stage.camera.position.set(0,1.3,3.6);
     stage.renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
     stage.renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
     stage.renderer.setSize(w,h);
+    stage.renderer.setClearColor(0xeef4f3,1);
     stage.renderer.shadowMap.enabled=true;
     host.appendChild(stage.renderer.domElement);
     stage.scene.add(new THREE.AmbientLight(0xffffff,.78));
@@ -642,6 +644,7 @@ function initStage3d(){
       playSignClip(state.signActive||0);
     }, ()=>stageFallback(host,"三维模型加载失败，已回退到平面手势示意图。"));
     loop3d();
+    setTimeout(resize3d,300); setTimeout(resize3d,900);
     window.addEventListener("resize", resize3d);
   }catch(e){ stageFallback(host,"当前浏览器不支持 WebGL，已回退到平面手势示意图。"); }
 }

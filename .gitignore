@@ -1,0 +1,25 @@
+# 系统与编辑器杂项
+Thumbs.db
+desktop.ini
+.DS_Store
+*.swp
+*~
+
+# 临时与备份
+*.tmp
+*.bak
+*.log
+~$*
+*.zip
+
+# 依赖与构建产物（后续若接入实验代码）
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+.vscode/
+.idea/
+dist/
+build/
