@@ -286,15 +286,15 @@ const SIGNS = [
      <path d="M28 46 L20 52 L28 58 M98 46 L106 52 L98 58" stroke="${STROKE}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`, "anim-wave")}
 ];
 
-/* 手语词的多语言标签 + 对应三维动作片段 + 互译桥接匹配词 */
+/* 手语词的多语言标签 + 三维骨骼姿态描述 + 互译桥接匹配词 */
 const SIGN_META = [
-  {en:"Hello", ja:"こんにちは", ru:"Здравствуйте", clip:"Wave", modelAct:"挥手", match:["你好","Hello","hello","こんにちは","Здравствуйте"]},
-  {en:"Thank you", ja:"ありがとう", ru:"Спасибо", clip:"ThumbsUp", modelAct:"竖拇指", match:["谢谢","谢谢你的帮助","Thank you","thank you","Спасибо"]},
-  {en:"Hospital", ja:"病院", ru:"Больница", clip:"Punch", modelAct:"双臂向前伸出（指方向）", match:["医院","医院怎么走","我想去医院看医生","hospital","Hospital"]},
-  {en:"How much?", ja:"いくら？", ru:"Сколько?", clip:"Dance", modelAct:"双手在体侧摆动", match:["多少钱","这个多少钱","How much","how much"]},
-  {en:"Good morning", ja:"おはよう", ru:"Доброе утро", clip:"Jump", modelAct:"双手高举跳起", match:["早上好","Good morning","good morning"]},
-  {en:"Sorry", ja:"ごめんなさい", ru:"Извините", clip:"No", modelAct:"摆手 + 低头鞠躬", match:["对不起","Sorry","sorry"]},
-  {en:"Goodbye", ja:"さようなら", ru:"До свидания", clip:"Wave", modelAct:"高举挥手，幅度更大", match:["再见","Goodbye","goodbye","さようなら","До свидания"]}
+  {en:"Hello", ja:"こんにちは", ru:"Здравствуйте", modelAct:"右手抬至肩前，掌心向前，左右挥手", match:["你好","Hello","hello","こんにちは","Здравствуйте"]},
+  {en:"Thank you", ja:"ありがとう", ru:"Спасибо", modelAct:"右手竖拇指靠近下巴，前倾致意", match:["谢谢","谢谢你的帮助","Thank you","thank you","Спасибо"]},
+  {en:"Hospital", ja:"病院", ru:"Больница", modelAct:"双手胸前搭十字", match:["医院","医院怎么走","我想去医院看医生","hospital","Hospital"]},
+  {en:"How much?", ja:"いくら？", ru:"Сколько?", modelAct:"胸前拇指食指捏合捻动，余指弯曲", match:["多少钱","这个多少钱","How much","how much"]},
+  {en:"Good morning", ja:"おはよう", ru:"Доброе утро", modelAct:"右手掌贴额头前侧，向前上方移开", match:["早上好","Good morning","good morning"]},
+  {en:"Sorry", ja:"ごめんなさい", ru:"Извините", modelAct:"右拳轻捶左胸，低头鞠躬", match:["对不起","Sorry","sorry"]},
+  {en:"Goodbye", ja:"さようなら", ru:"До свидания", modelAct:"右手抬至面部侧前方，掌心向前挥手", match:["再见","Goodbye","goodbye","さようなら","До свидания"]}
 ];
 SIGNS.forEach((s,i)=>Object.assign(s, SIGN_META[i]));
 
@@ -676,13 +676,107 @@ function stopAutoDemo(){ if(demo.timer){clearInterval(demo.timer); demo.timer=nu
 function toggleAutoDemo(){ demo.playing ? pauseAutoDemo() : resumeAutoDemo(); }
 function syncDemoBtn(){ const b=$("#demoToggle"); if(!b) return; b.textContent=demo.playing?"⏸ 暂停":"▶ 自动演示"; }
 
-/* ================= 3D 演示舞台（离线 three.js + 内置模型） ================= */
-const stage = { renderer:null, scene:null, camera:null, mixer:null, controls:null, clips:{}, clock:null, raf:0, ready:false, bones:null, signIdx:0, signT0:0 };
-const SIGN_BONES=["UpperArmR","LowerArmR","HandR"];
-// 每个词选用模型自带的、真的有肢体动作的动画片段
-const SIGN_CLIP=["Wave","ThumbsUp","Punch","Dance","Jump","No","Wave"];
-const SIGN_SPEED=[1,1,1,1.1,1,1,1];
+/* ================= 3D 演示舞台（离线 three.js + 骨骼姿态对齐示意图） =================
+ * 说明：模型为 RobotExpressive 占位机器人。本模块不再播放内置卡通动画片段，
+ * 而是按 7 个手语词的平面示意图直接摆骨骼姿态（手臂 / 手腕 / 手指 / 头部 / 躯干）。
+ * 姿态表中的角度为首版约定值，需在真实浏览器对照示意图微调；标准手型仍以页面 SVG 示意图为准。
+ */
+const stage = { renderer:null, scene:null, camera:null, controls:null, clock:null, raf:0, ready:false, bones:{}, model:null, baseY:0, signIdx:0, signT0:0 };
+
+// GLB 内骨骼节点名（带点）；查不到的骨会安全跳过，不影响演示
+const BONE_NAME = {
+  shoulderR:"Shoulder.R", upperR:"UpperArm.R", foreR:"LowerArm.R", handR:"Hand.R",
+  thumbR:"Thumb.R", thumb2R:"Thumb2.R", indexR:"Index.R", index2R:"Index2.R",
+  mid1R:"Middle1.R", mid2R:"Middle2.R", ring1R:"Ring1.R", ring2R:"Ring2.R",
+  shoulderL:"Shoulder.L", upperL:"UpperArm.L", foreL:"LowerArm.L", handL:"Hand.L",
+  thumbL:"Thumb.L", indexL:"Index.L", mid1L:"Middle1.L", ring1L:"Ring1.L",
+  head:"Head", torso:"Torso"
+};
+
+/* 每个词的姿态表：
+ *  armR/armL：上臂 / 前臂 / 手腕的相对旋转 [rx,ry,rz]（弧度，叠加在模型 rest 姿态上）
+ *  fingers：open 张开 | fist 握拳 | pinch 拇指食指捏合 | thumbs 竖拇指
+ *  head/body：头部、躯干相对旋转
+ *  osc：在指定骨骼上叠加的循环摆动 {bone, axis:'x'|'y'|'z', amp, freq}
+ *  角度为首版约定值，真机对照示意图微调即可。
+ */
+const SIGN_POSE = [
+  { // 1 你好：右手抬至肩前，掌心向前，五指张开，左右挥手
+    armR:{ upper:[0.55,0,-0.15], fore:[0,0,0], hand:[0,Math.PI/2,0] }, armL:null,
+    fingers:"open", head:[0,0,0], body:[0,0,0],
+    osc:{ bone:"handR", axis:"z", amp:0.22, freq:1.2 } },
+  { // 2 谢谢：右手竖拇指靠近下巴，余指握拳，前倾致意
+    armR:{ upper:[0.45,0,0.1], fore:[0.5,0,0], hand:[0,0,0] }, armL:null,
+    fingers:"thumbs", head:[0.12,0,0], body:[0.08,0,0], osc:null },
+  { // 3 医院：双手胸前搭十字
+    armR:{ upper:[0.35,0,-0.1], fore:[0.2,0,0], hand:[0,0,0] },
+    armL:{ upper:[0.35,0,0.1], fore:[0.2,0,0], hand:[0,0,0] },
+    fingers:"open", head:[0,0,0], body:[0,0,0], osc:null },
+  { // 4 多少钱：胸前拇指食指捏合捻动，余指弯曲
+    armR:{ upper:[0.3,0,0], fore:[0.25,0,0], hand:[0,0,0] }, armL:null,
+    fingers:"pinch", head:[0,0,0], body:[0,0,0],
+    osc:{ bone:"thumbR", axis:"x", amp:0.12, freq:2.2 } },
+  { // 5 早上好：右手掌贴额头前侧，向前上方移开
+    armR:{ upper:[0.7,0,0], fore:[0.1,0,0], hand:[0,Math.PI/2,0] }, armL:null,
+    fingers:"open", head:[-0.1,0,0], body:[0,0,0], osc:null },
+  { // 6 对不起：右拳轻捶左胸，低头鞠躬
+    armR:{ upper:[0.25,0,0.2], fore:[0.3,0,0], hand:[0,0,0] }, armL:null,
+    fingers:"fist", head:[0.3,0,0], body:[0.15,0,0], osc:null },
+  { // 7 再见：右手抬至面部侧前方，掌心向前，大幅挥手
+    armR:{ upper:[0.6,0,-0.2], fore:[0,0,0], hand:[0,Math.PI/2,0] }, armL:null,
+    fingers:"open", head:[0,0,0], body:[0,0,0],
+    osc:{ bone:"handR", axis:"z", amp:0.3, freq:1.4 } }
+];
+
 function stageFallback(host, msg){ if(host) host.innerHTML=`<div class="stage-fallback">${msg}</div>`; }
+
+function resolveBones(model){
+  stage.bones={};
+  Object.keys(BONE_NAME).forEach(k=>{
+    const b=model.getObjectByName(BONE_NAME[k]);
+    if(b){ b.userData.rest=b.quaternion.clone(); stage.bones[k]=b; }
+  });
+}
+function resetBones(){
+  Object.keys(stage.bones).forEach(k=>{
+    const b=stage.bones[k];
+    if(b.userData.rest) b.quaternion.copy(b.userData.rest);
+  });
+}
+function poseBone(key, deltas){
+  const b=stage.bones[key]; if(!b||!deltas) return;
+  b.quaternion.copy(b.userData.rest).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(deltas[0]||0,deltas[1]||0,deltas[2]||0)));
+}
+function applyFingers(preset, side){
+  const s=side==="L"?"L":"R";
+  const idx2=stage.bones["index2"+s], mid2=stage.bones["mid2"+s], ring2=stage.bones["ring2"+s],
+        thumb=stage.bones["thumb"+s], index=stage.bones["index"+s],
+        mid1=stage.bones["mid1"+s], ring1=stage.bones["ring1"+s];
+  const curl = preset==="open" ? -0.12 : preset==="fist" ? 0.35 : preset==="pinch" ? 0.28 : 0.35;
+  [idx2,mid2,ring2].forEach(b=>{ if(b) b.quaternion.copy(b.userData.rest).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(curl,0,0))); });
+  [index,mid1,ring1].forEach(b=>{ if(b) b.quaternion.copy(b.userData.rest).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(curl*0.5,0,0))); });
+  if(thumb){
+    const tz = preset==="open"||preset==="thumbs" ? -0.35 : 0.15; // 拇指外展 / 内收
+    thumb.quaternion.copy(thumb.userData.rest).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0,0,tz)));
+  }
+}
+function applyPose(i,t){
+  if(!stage.ready||!stage.model) return;
+  const p=SIGN_POSE[i]; if(!p) return;
+  resetBones();
+  if(p.armR){ poseBone("upperR",p.armR.upper); poseBone("foreR",p.armR.fore); poseBone("handR",p.armR.hand); }
+  if(p.armL){ poseBone("upperL",p.armL.upper); poseBone("foreL",p.armL.fore); poseBone("handL",p.armL.hand); }
+  if(p.fingers){ applyFingers(p.fingers,"R"); if(p.armL) applyFingers(p.fingers,"L"); }
+  poseBone("head",p.head); poseBone("torso",p.body);
+  if(p.osc){
+    const b=stage.bones[p.osc.bone];
+    if(b){
+      const a=p.osc.amp*Math.sin(Math.PI*2*p.osc.freq*t);
+      const e=new THREE.Euler(); e[p.osc.axis]=a;
+      b.quaternion.multiply(new THREE.Quaternion().setFromEuler(e));
+    }
+  }
+}
 function initStage3d(){
   const host=$("#stage3d"); if(!host) return;
   if(!window.THREE || !THREE.GLTFLoader){ stageFallback(host,"三维引擎未加载，已回退到平面手势示意图。"); return; }
@@ -713,7 +807,6 @@ function initStage3d(){
     new THREE.GLTFLoader().parse(bin.buffer, "", g=>{
       const model=g.scene;
       model.traverse(o=>{ if(o.isMesh) o.castShadow=true; });
-      // 自适应包围盒：统一缩放到目标高度并落地居中
       let box=new THREE.Box3().setFromObject(model);
       let size=box.getSize(new THREE.Vector3());
       const sc=size.y>0?2.2/size.y:1;
@@ -724,10 +817,9 @@ function initStage3d(){
       stage.scene.add(model);
       stage.model=model;
       stage.baseY=model.position.y;
-      stage.clips={}; g.animations.forEach(c=>stage.clips[c.name]=c);
-      stage.mixer=new THREE.AnimationMixer(model);
+      resolveBones(model);
       stage.ready=true;
-      playSignClip(state.signActive||0);
+      applyPose(state.signActive||0, 0);
     }, ()=>stageFallback(host,"三维模型加载失败，已回退到平面手势示意图。"));
     loop3d();
     setTimeout(resize3d,300); setTimeout(resize3d,900);
@@ -735,54 +827,17 @@ function initStage3d(){
   }catch(e){ stageFallback(host,"当前浏览器不支持 WebGL，已回退到平面手势示意图。"); }
 }
 function playSignClip(i){
-  if(!stage.mixer || !stage.ready) return;
+  if(!stage.ready) return;
   const s=SIGNS[i]; if(!s) return;
   stage.signIdx=i;
   stage.signT0=performance.now()/1000;
-  stage.mixer.stopAllAction();
-  // 每个词都用模型自带动画里“真的会动”的那几支（Wave/ThumbsUp/Walking/Dance/Jump/No），
-  // 再叠加一次整体姿态（点头/鞠躬/侧倾），让 7 个词的动作彼此区分
-  const name=SIGN_CLIP[i]||"Idle";
-  const clip=stage.clips[name]||stage.clips.Idle;
-  if(clip){
-    const act=stage.mixer.clipAction(clip);
-    act.reset(); act.setLoop(THREE.LoopRepeat, Infinity); act.timeScale=SIGN_SPEED[i]||1; act.play();
-  }
-}
-
-/* 每个手语词的整体姿态编排（叠加在自带动画之上，保证动作明显、彼此可辨） */
-function signPose(i,t){
-  const TAU=Math.PI*2;
-  switch(i){
-    case 0: // 你好：挥手 + 轻微侧倾点头
-      return {rx:0, ry:0, rz:0.05*Math.sin(TAU*1.0*t), dy:0.02*Math.sin(TAU*1.0*t)};
-    case 1: // 谢谢：竖拇指 + 前倾致意
-      return {rx:0.18*Math.max(0,Math.sin(TAU*0.9*t)), ry:0, rz:0, dy:0};
-    case 2: // 医院：迈步（Walking）+ 左右转头看向方向
-      return {rx:0.03, ry:0.32*Math.sin(TAU*0.55*t), rz:0.04*Math.sin(TAU*0.55*t), dy:0};
-    case 3: // 多少钱：双手摆动（Dance）+ 身体左右晃
-      return {rx:0, ry:0, rz:0.09*Math.sin(TAU*2.4*t), dy:0.015*Math.sin(TAU*2.4*t)};
-    case 4: // 早上好：跳起（Jump）+ 身体上弹
-      return {rx:0, ry:0, rz:0, dy:0.03*Math.abs(Math.sin(TAU*1.1*t))};
-    case 5: // 对不起：摆手（No）+ 低头鞠躬
-      return {rx:0.26*Math.max(0,Math.sin(TAU*0.8*t)), ry:0, rz:0, dy:0};
-    case 6: // 再见：挥手 + 大幅左右摆
-      return {rx:0, ry:0, rz:0.12*Math.sin(TAU*1.4*t), dy:0.02*Math.sin(TAU*1.4*t)};
-    default: return {rx:0,ry:0,rz:0,dy:0};
-  }
-}
-function applySignPose(){
-  if(!stage.ready||!stage.model) return;
-  const t=performance.now()/1000-(stage.signT0||0);
-  const p=signPose(stage.signIdx||0,t);
-  stage.model.rotation.set(p.rx,p.ry,p.rz);
-  stage.model.position.y=(stage.baseY||0)+p.dy;
+  applyPose(i,0);
 }
 function loop3d(){
   stage.raf=requestAnimationFrame(loop3d);
-  const dt=stage.clock?stage.clock.getDelta():0;
-  if(stage.mixer) stage.mixer.update(dt);
-  applySignPose();
+  if(stage.clock) stage.clock.getDelta();
+  const t=performance.now()/1000-(stage.signT0||0);
+  applyPose(stage.signIdx||0,t);
   if(stage.controls) stage.controls.update();
   if(stage.renderer&&stage.scene&&stage.camera) stage.renderer.render(stage.scene,stage.camera);
 }
@@ -794,7 +849,7 @@ function resize3d(){
 }
 function stopStage3d(){
   if(stage.raf) cancelAnimationFrame(stage.raf);
-  stage.raf=0; stage.ready=false; stage.mixer=null;
+  stage.raf=0; stage.ready=false; stage.model=null; stage.bones={};
   if(stage.renderer){ stage.renderer.dispose(); stage.renderer=null; }
 }
 
@@ -804,7 +859,7 @@ function renderSign(){
       <h2>手语窄场景演示（7 个固定示意词）</h2>
       <div class="guide">
         <b>这个模块怎么演示（不开摄像头也能完成）：</b><br>
-        ① 点「▶ 自动演示」，页面每隔 2.6 秒自动切换一个手语词并播放动作动画；也可以手动点词卡或按键盘 <span class="kbd">1</span>–<span class="kbd">7</span>。<br>
+        ① 点「▶ 自动演示」，页面每隔 2.6 秒自动切换一个手语词的骨骼姿态；也可以手动点词卡或按键盘 <span class="kbd">1</span>–<span class="kbd">7</span>。<br>
         ② 对照屏幕上的动作示意图用手比出对应动作，念出下方“演示话术”。<br>
         ③ 摄像头只是取景备选：点开后拍摄 / 上传图片，再点对应词确认；打不开直接走词卡，不影响演示。
       </div>
@@ -833,7 +888,7 @@ function renderSign(){
             <button id="demoStop" class="ghost">⏹ 停止</button>
             <span id="demoStatus" class="muted"></span>
           </div>
-          <div class="muted">点击词卡查看内置动作动画与分解；采集画面后在候选词中确认对应手语词。</div>
+          <div class="muted">点击词卡查看骨骼姿态与动作分解；采集画面后在候选词中确认对应手语词。</div>
           <div class="sign-grid" id="signGrid"></div>
           <div id="signResult"></div>
         </div>
@@ -893,7 +948,7 @@ function pickSign(i){
       </div>
       <div class="sign-detail">
         <div class="sd-block"><b>动作分解（标准手语）</b><ol>${s.steps.map((st,i)=>`<li>${st}</li>`).join("")}</ol></div>
-        <div class="sd-block"><b>3D 模型示意动作</b><p>${s.modelAct}。三维模型用的是内置骨骼动画，负责“动作在发生”的观感，<b>不等于</b>上面的标准手型；标准手型请看「动作分解」与右侧示意图。</p></div>
+        <div class="sd-block"><b>3D 模型示意动作</b><p>${s.modelAct}。三维模型按示意图直接摆骨骼姿态（手臂位置、手腕朝向、手指屈伸），受占位模型比例与手指数量限制，仍是近似示意，<b>不等于</b>上面的标准手型；标准手型请看「动作分解」与右侧示意图。</p></div>
         <div class="sd-block"><b>使用场景</b><p>${s.scene}</p></div>
         <div class="sd-block"><b>要点提示</b><p>${s.tips}</p></div>
         <div class="sd-block"><b>手位对照</b><p>手放在${s.pos}，对照图中浅色头部 / 身体引导线确认位置。</p></div>
@@ -942,7 +997,7 @@ function renderDefense(){
       <div class="step"><div class="n">1</div><div><strong>开场（20 秒）：</strong>介绍项目名 LinguaBridge，目标是帮方言使用者、外语沟通者和听障人群做跨语言沟通；说明今天演示的是 MVP 原型。</div></div>
       <div class="step"><div class="n">2</div><div><strong>方言·多语言互译（60 秒）：</strong>打开互译页，选源语言四川话、目标语言英语；先点词卡展示离线短句，再在输入框打一句长句（如“我想去医院看医生”）展示在线翻译；切换日语 / 俄语，点「⇄」交换方向演示反向链路。</div></div>
       <div class="step"><div class="n">2.5</div><div><strong>粤语链路（30 秒）：</strong>源语言切“粤语”，输入“醫院點行呀？”→ 词库直出“医院怎么走”；再点「⇄」演示普通话→粤语（“多少钱”→“幾錢呀？”）；最后演示粤语→英语的两段式（粤语先经词库转普通话，再在线转英文）。讲清口径：词库内 22 个常用句是人工校对的准确结果，词库外为参考级在线翻译。</div></div>
-      <div class="step"><div class="n">3</div><div><strong>手语演示（60 秒）：</strong>打开手语页，点「▶ 自动演示」逐个播放 7 个词的动作动画；对照示意图用手比动作，念出每个词的演示话术。摄像头为备选取景，打不开直接点词卡或按 1–7，不影响演示。<br><b>口径（务必先说）：</b>页面把两件事分开——「动作分解」是真手语的标准手型；3D 模型做的是“示意动作”（内置骨骼动画，如挥手、竖拇指、前伸指路），用来证明视觉通道能跑通，<b>不是</b>写实手语动捕。评委问到模型动作与文字不完全一致时，就按这句解释。</div></div>
+      <div class="step"><div class="n">3</div><div><strong>手语演示（60 秒）：</strong>打开手语页，点「▶ 自动演示」逐个切换 7 个词的骨骼姿态；对照示意图用手比动作，念出每个词的演示话术。摄像头为备选取景，打不开直接点词卡或按 1–7，不影响演示。<br><b>口径（务必先说）：</b>页面把两件事分开——「动作分解」是真手语的标准手型；3D 模型按示意图摆骨骼姿态做近似示意，用来证明视觉通道能跑通，<b>不是</b>写实手语动捕，也未做手语母语者校准。评委问到模型动作与文字不完全一致时，就按这句解释。</div></div>
       <div class="step"><div class="n">4</div><div><strong>收尾与边界（40 秒）：</strong>回到本页，讲清评测设计、当前边界和后续规划；强调先跑通一个真实沟通场景的闭环，再扩展词汇与语种。</div></div>
     </div>
 
